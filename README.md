@@ -5,6 +5,10 @@ MOTHERBOARD6, MOTHERBOARD9 and MOTHERBOARD12 allows for any combination of pushb
 
 The MOTHERBOARDs come with 2 boards, one on which the inputs and leds are soldered to, and one on which the Teensy and other components are soldered to. Both boards are attached by multiple pin headers.
 
+Note: MOTHERBOARD12 shares the same B board as MOTHERBOARD9.
+
+<img src="motherboard12.jpg" width="200px"/>
+
 ## Limitations
 
 Due to the use of the audio board, the available pins are very limited. Looking at the Teensy audio board page (https://www.pjrc.com/store/teensy3_audio.html) we can see only pins 0, 1, 2, 3, 4, 5, 9, 14, 16, 17, 22 are available. Also looking at Teensy pins (https://www.pjrc.com/store/teensy40.html), only 14, 16 and 17 from this subset are analog inputs.
@@ -28,12 +32,29 @@ Some of the rules are:
 
 TODO: Design rules guide image.
 
-## Historic 
+## Known issues
+- Encoders are not yet very reliable
 
-I still need to test the current schematics.
+## Historic
 
 Rev 3 (current) using more multiplexers because of the limited available pins.
 
 Rev 2 added multiplexers, but wasn't taking in account the forbidden pins from the use of the audio board.
 
 Rev 1 was using matrices for potentiometers, which doesn't work.
+
+## About me
+You can find me on Bandcamp and Instagram:
+
+https://ghostintranslation.bandcamp.com/
+
+https://www.instagram.com/ghostintranslation/
+
+https://www.youtube.com/channel/UCcyUTGTM-hGLIz4194Inxyw
+
+https://www.ghostintranslation.com/
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
