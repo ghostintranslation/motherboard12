@@ -48,6 +48,10 @@ In the Tools -> USB Type menu, choose "Serial + midi".
 
 Then you are ready to compile and upload the sketch.
 
+## MIDI
+
+The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
+
 ## Design rules
 
 I made up design rules so that I can create many modules that will reuse the same back boards to lower the cost, and to make it look nice too. 
@@ -70,7 +74,11 @@ Rev 2 added multiplexers, but wasn't taking in account the forbidden pins from t
 
 Rev 1 was using matrices for potentiometers, which doesn't work.
 
-## About me
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+# About me
 You can find me on Bandcamp and Instagram:
 
 https://ghostintranslation.bandcamp.com/
@@ -80,8 +88,3 @@ https://www.instagram.com/ghostintranslation/
 https://www.youtube.com/channel/UCcyUTGTM-hGLIz4194Inxyw
 
 https://www.ghostintranslation.com/
-
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
