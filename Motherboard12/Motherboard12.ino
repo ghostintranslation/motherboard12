@@ -30,6 +30,11 @@ Motherboard12 device(controls);
 void setup() {
   Serial.begin(115200);
   
+  while (!Serial && millis() < 2500); // wait for serial monitor
+
+  // Starting sequence
+  Serial.println("Ready!");
+  
   device.init();
   
   MIDI.setHandleNoteOn(onNoteOn);
@@ -38,11 +43,6 @@ void setup() {
   
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
-  
-  while (!Serial && millis() < 2500); // wait for serial monitor
-
-  // Starting sequence
-  Serial.println("Ready!");
 }
 
 void loop() {
