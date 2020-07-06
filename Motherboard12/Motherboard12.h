@@ -27,9 +27,9 @@ class Motherboard12{
     byte *potentiometersReadings; 
     
     // Encoders 
-    int *encoders;
+    byte *encoders;
     bool *encodersSwitch;
-    int *encodersState;
+    byte *encodersState;
     byte currentEncPinA;
     byte currentEncPinB;
     #define R_START 0x0
@@ -73,9 +73,8 @@ class Motherboard12{
     const unsigned int intervalDisplayFlash = 400;
     elapsedMillis clockDisplayFlash;
     // Inputs clock
-    const unsigned int intervalInputs = 50;
+    const unsigned int intervalInputs = 100;
     elapsedMicros clockInputs;
-//    void iterateRows();
     void updateDisplay();
     void iterateDisplay();
     void iterateInputs();
@@ -120,8 +119,8 @@ inline Motherboard12::Motherboard12(byte *inputs){
   this->potentiometers = new unsigned int[this->ioNumber];
   this->potentiometersTemp = new unsigned int[this->ioNumber];
   this->potentiometersReadings = new byte[this->ioNumber];
-  this->encoders = new int[this->ioNumber];
-  this->encodersState = new int[this->ioNumber];
+  this->encoders = new byte[this->ioNumber];
+  this->encodersState = new byte[this->ioNumber];
   this->encodersSwitch = new bool[this->ioNumber];
 
   for(byte i = 0; i < this->ioNumber; i++){
@@ -292,23 +291,6 @@ inline void Motherboard12::setMainMuxOnChannel(){
   digitalWrite(3, HIGH);
   digitalWrite(4, HIGH);
 }
-
-/**
- * Iterate over the rows
- */
-//inline void Motherboard12::iterateRows(){
-//  this->currentRow++;
-//  this->currentRow = this->currentRow % 3;
-//  
-//  for(byte i = 0; i < 3; i++){
-//    if(i == this->currentRow){
-//      digitalWrite(2 + this->currentRow, LOW);
-//    }else{
-//      digitalWrite(2 + i, HIGH);
-//    }
-//  }
-//}
-
 
 /**
  * Iterate LEDs
@@ -549,7 +531,7 @@ inline void Motherboard12::readEncoder(byte inputIndex){
   // When reading of Pin A and B is done we can interpret the result
   if (this->clockInputs > this->intervalInputs / 1.40
   && this->clockInputs < this->intervalInputs / 1.20) {
-
+    
     byte pinstate = (this->currentEncPinB << 1) | this->currentEncPinA;
     // Determine new state from the pins and state table.
     this->encodersState[inputIndex] = this->ttable[this->encodersState[inputIndex] & 0xf][pinstate];
@@ -588,7 +570,6 @@ inline void Motherboard12::readEncoder(byte inputIndex){
 //    }
 //  }
 }
-
 
 inline void Motherboard12::readMidiChannel(){
   this->setMainMuxOnChannel();
