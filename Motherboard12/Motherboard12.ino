@@ -24,7 +24,7 @@ MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 #include "Motherboard12.h"
 
 // 0 = empty, 1 = button, 2 = potentiometer, 3 = encoder
-byte controls[12] = {2,2,2,2, 2,2,2,2, 2,2,2,2};
+byte controls[12] = {2,2,2,2, 2,2,2,2, 3,1,1,1};
 Motherboard12 device(controls);
     
 void setup() {
