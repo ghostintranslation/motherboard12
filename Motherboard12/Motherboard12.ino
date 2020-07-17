@@ -23,10 +23,8 @@ MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
 #include "Motherboard12.h"
 
-// 0 = empty, 1 = button, 2 = potentiometer, 3 = encoder
-byte controls[12] = {2,2,2,2, 2,2,2,2, 3,1,1,1};
-Motherboard12 device(controls);
-    
+Motherboard12 * device = Motherboard12::getInstance();
+
 void setup() {
   Serial.begin(115200);
   
@@ -34,8 +32,9 @@ void setup() {
 
   // Starting sequence
   Serial.println("Ready!");
-  
-  device.init();
+  // 0 = empty, 1 = button, 2 = potentiometer, 3 = encoder
+  byte controls[12] = {1,1,1,1, 1,1,1,1, 3,3,3,3};
+  device->init(controls);
   
   MIDI.setHandleNoteOn(onNoteOn);
   MIDI.setHandleNoteOff(onNoteOff);
@@ -43,10 +42,11 @@ void setup() {
   
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
+
 }
 
 void loop() {
-  device.update();
+  device->update();
   
   MIDI.read();
   usbMIDI.read();
@@ -59,12 +59,12 @@ void loop() {
  * Midi note on callback
  */
 void onNoteOn(byte channel, byte note, byte velocity) {
-  device.setDisplay(0, 1);
+  device->setDisplay(0, 1);
 }
 
 /**
  * Midi note off callback
  */
 void onNoteOff(byte channel, byte note, byte velocity) {
-  device.setDisplay(0, 0);
+  device->setDisplay(0, 0);
 }

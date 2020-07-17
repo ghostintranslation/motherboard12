@@ -7,6 +7,9 @@
 class Motherboard12{
   
   private:
+    static Motherboard12 *instance;
+    Motherboard12();
+    
     byte currentRow = 0;
     byte currentLed = 0;
     byte currentInput = 0;
@@ -27,7 +30,7 @@ class Motherboard12{
     byte *potentiometersReadings; 
     
     // Encoders 
-    byte *encoders;
+    int *encoders;
     bool *encodersSwitch;
     byte *encodersState;
     byte currentEncPinA;
@@ -94,8 +97,8 @@ class Motherboard12{
     void printLeds();
     
   public:
-    Motherboard12(byte *inputs);
-    void init();
+    static Motherboard12 *getInstance();
+    void init(byte *inputs);
     void update();
     void setDisplay(byte ledIndex, byte ledStatus);
     void resetDisplay();
@@ -106,11 +109,13 @@ class Motherboard12{
     byte getMidiChannel();
 };
 
+// Instance pre init
+Motherboard12 * Motherboard12::instance = nullptr;
+
 /**
  * Constructor
  */
-inline Motherboard12::Motherboard12(byte *inputs){
-  this->columnsNumber = columnsNumber;
+inline Motherboard12::Motherboard12(){
   this->ioNumber = 3*this->columnsNumber;
 
   this->inputs = new byte[this->ioNumber];
@@ -119,12 +124,12 @@ inline Motherboard12::Motherboard12(byte *inputs){
   this->potentiometers = new unsigned int[this->ioNumber];
   this->potentiometersTemp = new unsigned int[this->ioNumber];
   this->potentiometersReadings = new byte[this->ioNumber];
-  this->encoders = new byte[this->ioNumber];
+  this->encoders = new int[this->ioNumber];
   this->encodersState = new byte[this->ioNumber];
   this->encodersSwitch = new bool[this->ioNumber];
 
   for(byte i = 0; i < this->ioNumber; i++){
-    this->inputs[i] = inputs[i];
+    this->inputs[i] = 0;
     this->leds[i] = 0;
     this->ledsDuration[i] = 0;
     this->buttons[i] = true;
@@ -139,9 +144,23 @@ inline Motherboard12::Motherboard12(byte *inputs){
 }
 
 /**
+ * Singleton instance
+ */
+inline static Motherboard12 *Motherboard12::getInstance()    {
+  if (!instance)
+     instance = new Motherboard12;
+  return instance;
+}
+
+/**
  * Init
  */
-inline void Motherboard12::init(){
+inline void Motherboard12::init(byte *inputs){
+  // Init of the inputs
+  for(byte i = 0; i < this->ioNumber; i++){
+    this->inputs[i] = inputs[i];
+  }
+  
   // Main multiplexer
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
@@ -202,14 +221,13 @@ inline void Motherboard12::update(){
   }else{
     // Inputs
 
-    // At 2nd half of the clock we read the current input, leaving time to mux to switch
-    if (this->clockInputs > this->intervalInputs / 2) {
-      this->readCurrentInput();
-    }
     // At the end of the clock we iterate to next input
     if (this->clockInputs >= this->intervalInputs) {
       this->iterateInputs();
       this->clockInputs = 0;
+    }else{
+      // Reading the current input
+      this->readCurrentInput();
     }
   }
 
@@ -406,20 +424,6 @@ inline void Motherboard12::readCurrentInput(){
  * @param byte inputeIndex The index of the input
  */
 inline void Motherboard12::readButton(byte inputIndex){
-//  byte rowNumber = inputIndex / this->columnsNumber;
-//  if(rowNumber == this->currentRow){
-//    byte columnNumber = inputIndex % this->columnsNumber;
-//    this->buttons[inputIndex] = !digitalRead(11 + columnNumber);
-//    
-//    if(this->buttons[inputIndex]){
-//      for(byte j = 0; j < this->ioNumber; j++){
-//        Serial.print (this->buttons[j]);
-//        Serial.print (" ");
-//      }
-//      Serial.println("");
-//    }
-//  }
-
   this->setMainMuxOnEncoders2();
   
   byte rowNumber = inputIndex / this->columnsNumber;
@@ -484,16 +488,15 @@ inline void Motherboard12::readEncoder(byte inputIndex){
   // Activating the right row in the matrix
   byte rowNumber = inputIndex / this->columnsNumber;
 
-  for(byte i = 0; i < 3; i++){
-    if(i == rowNumber){
-      digitalWrite(15 + i, LOW);
-    }else{
-      digitalWrite(15 + i, HIGH);
-    }
-  }
-
   // Setting the main multiplexer on encoders
-  if(this->clockInputs < this->intervalInputs / 1.80){
+  if(this->clockInputs < this->intervalInputs / 10){
+    for(byte i = 0; i < 3; i++){
+      if(i == rowNumber){
+        digitalWrite(15 + i, LOW);
+      }else{
+        digitalWrite(15 + i, HIGH);
+      }
+    }
     this->setMainMuxOnEncoders1();
   }
 
@@ -503,8 +506,8 @@ inline void Motherboard12::readEncoder(byte inputIndex){
   byte muxPinB = columnNumber * 2 + 1;
 
   // Giving time for the multiplexer to switch to Pin A 
-  if(this->clockInputs > this->intervalInputs / 1.80
-  && this->clockInputs < this->intervalInputs / 1.60) {
+  if(this->clockInputs > this->intervalInputs / 10
+  && this->clockInputs < this->intervalInputs / 6) {
     byte r0 = bitRead(muxPinA, 0);   
     byte r1 = bitRead(muxPinA, 1);    
     byte r2 = bitRead(muxPinA, 2);
@@ -515,9 +518,9 @@ inline void Motherboard12::readEncoder(byte inputIndex){
     this->currentEncPinA = digitalRead(22);
   }
   
-  // Giving time for the multiplexer to switch to Pin B
-  if(this->clockInputs > this->intervalInputs / 1.60
-  && this->clockInputs < this->intervalInputs / 1.40){
+   // Giving time for the multiplexer to switch to Pin B
+  if(this->clockInputs > this->intervalInputs / 6
+  && this->clockInputs < this->intervalInputs / 2){
     int r0 = bitRead(muxPinB, 0);   
     int r1 = bitRead(muxPinB, 1);    
     int r2 = bitRead(muxPinB, 2);
@@ -529,8 +532,8 @@ inline void Motherboard12::readEncoder(byte inputIndex){
   }
 
   // When reading of Pin A and B is done we can interpret the result
-  if (this->clockInputs > this->intervalInputs / 1.40
-  && this->clockInputs < this->intervalInputs / 1.20) {
+  if (this->clockInputs > this->intervalInputs / 2
+  && this->clockInputs < this->intervalInputs / 1.5) {
     
     byte pinstate = (this->currentEncPinB << 1) | this->currentEncPinA;
     // Determine new state from the pins and state table.
@@ -555,20 +558,9 @@ inline void Motherboard12::readEncoder(byte inputIndex){
   }
 
   // Giving time for the multiplexer to switch to Pin B
-  if (this->clockInputs > this->intervalInputs / 1.20){
+  if (this->clockInputs > this->intervalInputs / 1.5){
     this->encodersSwitch[inputIndex] = digitalRead(22);
   }
-    
-//    this->encodersSwitch[inputIndex] = !digitalRead(pinC);
-          
-//    if(this->encodersSwitch[inputIndex]){
-//      for(byte j = 0; j < this->ioNumber; j++){
-//          Serial.print (this->encodersSwitch[j]);
-//          Serial.print (" ");
-//        }
-//        Serial.println("");
-//    }
-//  }
 }
 
 inline void Motherboard12::readMidiChannel(){
