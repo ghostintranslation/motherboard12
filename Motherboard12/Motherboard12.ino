@@ -38,7 +38,7 @@ void setup() {
   
   MIDI.setHandleNoteOn(onNoteOn);
   MIDI.setHandleNoteOff(onNoteOff);
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin(device->getMidiChannel());
   
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
@@ -48,8 +48,8 @@ void setup() {
 void loop() {
   device->update();
   
-  MIDI.read();
-  usbMIDI.read();
+  MIDI.read(device->getMidiChannel());
+  usbMIDI.read(device->getMidiChannel());
 }
 
 

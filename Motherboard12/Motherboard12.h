@@ -579,7 +579,7 @@ inline void Motherboard12::readMidiChannel(){
     byte channelBit = !digitalRead(22);
     bitWrite(midiChannel, i, channelBit);
   }
-  this->midiChannel = midiChannel;
+  this->midiChannel = midiChannel + 1;
 }
 
 /**
