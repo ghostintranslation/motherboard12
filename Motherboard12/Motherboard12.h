@@ -704,8 +704,6 @@ inline byte Motherboard12::getMidiChannel() {
  * Handle click on a button
  */
 inline void Motherboard12::setHandleClick(byte inputIndex, ClickCallback fptr){
- Serial.println("setHandleClick");
-
   // Click can only happen on a button and an encoder's switch
   if(this->inputs[inputIndex] == 1 || this->inputs[inputIndex] == 3){
     this->inputsClickCallback[inputIndex] = fptr;
