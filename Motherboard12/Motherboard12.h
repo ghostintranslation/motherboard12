@@ -78,6 +78,11 @@ class Motherboard12{
     // Inputs clock
     const unsigned int intervalInputs = 100;
     elapsedMicros clockInputs;
+
+    // Callbacks
+    using ClickCallback = void (*)(void);
+    ClickCallback *inputsClickCallback;
+        
     void updateDisplay();
     void iterateDisplay();
     void iterateInputs();
@@ -107,6 +112,7 @@ class Motherboard12{
     int getAnalogMaxValue();
     int getAnalogMinValue();
     byte getMidiChannel();
+    void setHandleClick(byte inputIndex, ClickCallback fptr);
 };
 
 // Instance pre init
@@ -128,6 +134,7 @@ inline Motherboard12::Motherboard12() {
   this->encoders = new int[this->ioNumber];
   this->encodersState = new byte[this->ioNumber];
   this->encodersSwitch = new bool[this->ioNumber];
+  this->inputsClickCallback = new ClickCallback[this->ioNumber];
 
   for (byte i = 0; i < this->ioNumber; i++) {
     this->inputs[i] = 0;
@@ -140,6 +147,7 @@ inline Motherboard12::Motherboard12() {
     this->encoders[i] = 0;
     this->encodersState[i] = 0;
     this->encodersSwitch[i] = true;
+    this->inputsClickCallback[i] = nullptr;
   }
 
 }
@@ -147,7 +155,7 @@ inline Motherboard12::Motherboard12() {
 /**
  * Singleton instance
  */
-inline Motherboard12 *Motherboard12::getInstance() {
+inline Motherboard12 *Motherboard12::getInstance()    {
   if (!instance)
     instance = new Motherboard12;
   return instance;
@@ -234,7 +242,7 @@ inline void Motherboard12::update() {
 
   // Debug
   if (this->clockDebug >= 100) {
-    this->printInputs();
+//    this->printInputs();
     //    this->printLeds();
     this->clockDebug = 0;
   }
@@ -446,7 +454,25 @@ inline void Motherboard12::readButton(byte inputIndex) {
   digitalWrite(9, r1);
   digitalWrite(14, r2);
 
-  this->buttons[inputIndex] = digitalRead(22);
+  // Giving some time to the Mux and pins to switch
+  if (this->clockInputs > this->intervalInputs / 1.5) {
+    
+    // Reading the new value
+    bool newReading = digitalRead(22);
+  
+    // If there is a callback on that input
+    if(this->inputsClickCallback[inputIndex] != nullptr){
+      // Inverted logic, 0 = button pushed
+      // So if previous value is not pushed and now is pushed
+      if(this->buttons[inputIndex] && !newReading){ 
+        // Calling the callback
+        this->inputsClickCallback[inputIndex]();
+      }
+    }
+  
+    // Updating the value
+    this->buttons[inputIndex] = newReading;
+  }
 }
 
 
@@ -560,7 +586,23 @@ inline void Motherboard12::readEncoder(byte inputIndex) {
 
   // Giving time for the multiplexer to switch to Pin B
   if (this->clockInputs > this->intervalInputs / 1.5) {
-    this->encodersSwitch[inputIndex] = digitalRead(22);
+//    this->encodersSwitch[inputIndex] = digitalRead(22);
+
+    // Reading the new value
+    bool newReading = digitalRead(22);
+  
+    // If there is a callback on that input
+    if(this->inputsClickCallback[inputIndex] != nullptr){
+      // Inverted logic, 0 = button pushed
+      // So if previous value is not pushed and now is pushed
+      if(this->encodersSwitch[inputIndex] && !newReading){ 
+        // Calling the callback
+        this->inputsClickCallback[inputIndex](); 
+      }
+    }
+  
+    // Updating the value
+    this->encodersSwitch[inputIndex] = newReading;
   }
 }
 
@@ -656,6 +698,18 @@ inline int Motherboard12::getAnalogMaxValue() {
 
 inline byte Motherboard12::getMidiChannel() {
   return this->midiChannel;
+}
+
+/**
+ * Handle click on a button
+ */
+inline void Motherboard12::setHandleClick(byte inputIndex, ClickCallback fptr){
+ Serial.println("setHandleClick");
+
+  // Click can only happen on a button and an encoder's switch
+  if(this->inputs[inputIndex] == 1 || this->inputs[inputIndex] == 3){
+    this->inputsClickCallback[inputIndex] = fptr;
+  }
 }
 
 /**

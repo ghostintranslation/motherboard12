@@ -43,6 +43,10 @@ void setup() {
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
 
+  device->setHandleClick(0, onButton1Click);
+  device->setHandleClick(8, onRotary8Click);
+  device->setHandleClick(9, onRotary9Click);
+
 }
 
 void loop() {
@@ -67,4 +71,15 @@ void onNoteOn(byte channel, byte note, byte velocity) {
  */
 void onNoteOff(byte channel, byte note, byte velocity) {
   device->setDisplay(0, 0);
+}
+
+
+void onButton1Click(){
+  Serial.println("onButton1Click");
+}
+void onRotary8Click(){
+  Serial.println("onRotary8Click");
+}
+void onRotary9Click(){
+  Serial.println("onRotary9Click");
 }
