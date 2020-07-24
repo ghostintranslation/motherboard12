@@ -43,9 +43,15 @@ void setup() {
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
 
-  device->setHandleClick(0, onButton1Click);
-  device->setHandleClick(8, onRotary8Click);
-  device->setHandleClick(9, onRotary9Click);
+  device->setHandlePress(0, onButton1Press);
+  device->setHandleLongPress(0, onButton1LongPress);
+  device->setHandlePress(1, onButton2Press);
+  device->setHandlePress(8, onRotary8Press);
+  device->setHandleLongPress(8, onRotary8LongPress);
+  device->setHandlePress(9, onRotary9Press);
+  device->setHandleRotaryChange(9, onRotary9Change);
+//  device->setHandleRotaryIncrement(9, onRotary9Increment);
+//  device->setHandleRotaryDecrement(9, onRotary9Decrement);
 
 }
 
@@ -63,23 +69,40 @@ void loop() {
  * Midi note on callback
  */
 void onNoteOn(byte channel, byte note, byte velocity) {
-  device->setDisplay(0, 1);
+  device->setLED(0, 1);
 }
 
 /**
  * Midi note off callback
  */
 void onNoteOff(byte channel, byte note, byte velocity) {
-  device->setDisplay(0, 0);
+  device->setLED(0, 0);
 }
 
 
-void onButton1Click(){
-  Serial.println("onButton1Click");
+void onButton1Press(){
+  Serial.println("onButton1Press");
 }
-void onRotary8Click(){
-  Serial.println("onRotary8Click");
+void onButton2Press(){
+  Serial.println("onButton2Press");
 }
-void onRotary9Click(){
-  Serial.println("onRotary9Click");
+void onButton1LongPress(){
+  Serial.println("onButton1LongPress");
+}
+void onRotary8Press(){
+  Serial.println("onRotary8Press");
+}
+void onRotary8LongPress(){
+  Serial.println("onRotary8LongPress");
+}
+void onRotary9Press(){
+  Serial.println("onRotary9Press");
+}
+
+void onRotary9Change(bool value){
+  if(value){
+    Serial.println("onRotary9Change increment");
+  }else{
+    Serial.println("onRotary9Change decrement");
+  }
 }
