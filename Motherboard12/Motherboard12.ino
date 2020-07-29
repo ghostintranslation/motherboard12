@@ -50,8 +50,6 @@ void setup() {
   device->setHandleLongPress(8, onRotary8LongPress);
   device->setHandlePress(9, onRotary9Press);
   device->setHandleRotaryChange(9, onRotary9Change);
-//  device->setHandleRotaryIncrement(9, onRotary9Increment);
-//  device->setHandleRotaryDecrement(9, onRotary9Decrement);
 
 }
 

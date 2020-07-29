@@ -363,15 +363,12 @@ inline void Motherboard12::updateDisplay() {
     this->setMainMuxOnLeds2();
   }
 
-  //  if(this->clockDisplay > this->intervalDisplay / 2
-  //  && this->clockDisplay < this->intervalDisplay / 1.75) {
   byte r0 = bitRead(this->currentLed, 0);
   byte r1 = bitRead(this->currentLed, 1);
   byte r2 = bitRead(this->currentLed, 2);
   digitalWrite(5, r0);
   digitalWrite(9, r1);
   digitalWrite(14, r2);
-  //  }
 
   //    digitalWrite(22, HIGH);
 
