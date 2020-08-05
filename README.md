@@ -1,4 +1,7 @@
 # MOTHERBOARD12
+
+![GitHub version](https://img.shields.io/github/v/release/ghostintranslation/motherboard12.svg?include_prereleases)
+
 MOTHERBOARD12 is a 12 controls Teensy 4.0 + audio board platform.
 
 MOTHERBOARD6, MOTHERBOARD9 and MOTHERBOARD12 allows for any combination of pushbuttons, potentiometers and encoders, in addition to leds. The footprints of those 3 type of components are stacked together so that only one pcb can be used for many different modules.
@@ -7,7 +10,7 @@ The MOTHERBOARDs come with 2 boards, one on which the inputs and leds are solder
 
 Note: MOTHERBOARD12 shares the same B board as MOTHERBOARD9.
 
-NOTE: This is a work in progress.
+I sell the PCBs if you wish to build it. You can get them here: https://ghostintranslation.bandcamp.com/merch/motherboard12-pcb
 
 <img src="motherboard12.jpg" width="200px"/>
 
