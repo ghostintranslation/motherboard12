@@ -3,7 +3,7 @@
 
 /**
  * Motherboard12
- * v1.1.0
+ * v1.1.1
  */
 class Motherboard12{
 
@@ -26,6 +26,7 @@ class Motherboard12{
     bool *buttons;
     // Potentiometers
     unsigned int *potentiometers;
+    unsigned int *potentiometersPrevious;
     // For smoothing purposes
     unsigned int *potentiometersTemp;
     byte *potentiometersReadings;
@@ -91,6 +92,8 @@ class Motherboard12{
     LongPressUpCallback *inputsLongPressUpCallback;
     elapsedMillis *inputsPressTime;
     bool *inputsLongPressDownFired;
+    using PotentiometerChangeCallback = void (*)(byte, unsigned int, int);
+    PotentiometerChangeCallback *inputsPotentiometerChangeCallback;
     using RotaryChangeCallback = void (*)(bool);
     RotaryChangeCallback *inputsRotaryChangeCallback;
 
@@ -131,6 +134,7 @@ class Motherboard12{
     void setHandleLongPressDown(byte inputIndex, LongPressDownCallback fptr);
     void setHandlePressUp(byte inputIndex, PressUpCallback fptr);
     void setHandleLongPressUp(byte inputIndex, LongPressUpCallback fptr);
+    void setHandlePotentiometerChange(byte inputIndex, PotentiometerChangeCallback fptr);
     void setHandleRotaryChange(byte inputIndex, RotaryChangeCallback fptr);
 };
 
@@ -148,6 +152,7 @@ inline Motherboard12::Motherboard12() {
   this->ledsDuration = new unsigned int[this->ioNumber];
   this->buttons = new bool[this->ioNumber];
   this->potentiometers = new unsigned int[this->ioNumber];
+  this->potentiometersPrevious = new unsigned int[this->ioNumber];
   this->potentiometersTemp = new unsigned int[this->ioNumber];
   this->potentiometersReadings = new byte[this->ioNumber];
   this->encoders = new int[this->ioNumber];
@@ -159,6 +164,7 @@ inline Motherboard12::Motherboard12() {
   this->inputsLongPressUpCallback = new PressUpCallback[this->ioNumber];
   this->inputsPressTime = new elapsedMillis[this->ioNumber];
   this->inputsLongPressDownFired = new bool[this->ioNumber];
+  this->inputsPotentiometerChangeCallback = new PotentiometerChangeCallback[this->ioNumber];
   this->inputsRotaryChangeCallback = new RotaryChangeCallback[this->ioNumber];
 
   for (byte i = 0; i < this->ioNumber; i++) {
@@ -167,6 +173,7 @@ inline Motherboard12::Motherboard12() {
     this->ledsDuration[i] = 0;
     this->buttons[i] = true;
     this->potentiometers[i] = 0;
+    this->potentiometersPrevious[i] = 0;
     this->potentiometersTemp[i] = 0;
     this->potentiometersReadings[i] = 0;
     this->encoders[i] = 0;
@@ -178,6 +185,7 @@ inline Motherboard12::Motherboard12() {
     this->inputsLongPressUpCallback[i] = nullptr;
     this->inputsPressTime[i] = 0;
     this->inputsLongPressDownFired[i] = false;
+    this->inputsPotentiometerChangeCallback[i] = nullptr;
     this->inputsRotaryChangeCallback[i] = nullptr;
   }
 
@@ -573,14 +581,22 @@ inline void Motherboard12::readPotentiometer(byte inputIndex) {
   this->potentiometersReadings[inputIndex] = this->potentiometersReadings[inputIndex] + 1;
   this->potentiometersTemp[inputIndex] += analogRead(22);
 
-  if (this->potentiometersReadings[inputIndex] == 255) {
-    this->potentiometers[inputIndex] = this->potentiometersTemp[inputIndex] / 255;
+  if(this->potentiometersReadings[inputIndex] == 255){
+    this->potentiometers[inputIndex] = this->potentiometersTemp[inputIndex] / 255; 
     this->potentiometers[inputIndex] = map(this->potentiometers[inputIndex], this->getAnalogMinValue(), this->getAnalogMaxValue(), 0, 1023);
     this->potentiometers[inputIndex] = constrain(this->potentiometers[inputIndex], (unsigned int)0, (unsigned int)1023);
+    
+    if(this->potentiometers[inputIndex] != this->potentiometersPrevious[inputIndex]){
+      // Calling the potentiometer callback if there is one
+      if(this->inputsPotentiometerChangeCallback[inputIndex] != nullptr){
+        this->inputsPotentiometerChangeCallback[inputIndex](inputIndex, this->potentiometers[inputIndex], this->potentiometers[inputIndex] - this->potentiometersPrevious[inputIndex] );
+      }
+    }
+    
     this->potentiometersReadings[inputIndex] = 0;
     this->potentiometersTemp[inputIndex] = 0;
+    this->potentiometersPrevious[inputIndex] = this->potentiometers[inputIndex];
   }
-
 }
 
 /**
@@ -900,6 +916,16 @@ inline void Motherboard12::setHandleLongPressUp(byte inputIndex, LongPressUpCall
   // Press can only happen on a button and an encoder's switch
   if(this->inputs[inputIndex] == 1 || this->inputs[inputIndex] == 3){
     this->inputsLongPressUpCallback[inputIndex] = fptr;
+  }
+}
+
+/**
+ * Handle potentiometer
+ */
+inline void Motherboard12::setHandlePotentiometerChange(byte inputIndex, PotentiometerChangeCallback fptr){
+  // Only for rotaries
+  if(this->inputs[inputIndex] == 2){
+    this->inputsPotentiometerChangeCallback[inputIndex] = fptr;
   }
 }
 
