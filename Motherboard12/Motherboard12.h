@@ -965,14 +965,8 @@ inline void Motherboard12::setHandleRotaryChange(byte inputIndex, RotaryChangeCa
 }
 
 inline void Motherboard12::writeLED(byte index){
-  if(this->ledsBrightness[index] == 255){
-    digitalWriteFast(22, LOW);
-  }else if(this->ledsBrightness[index] == 0){
-    digitalWriteFast(22, HIGH);
-  }else{
-    byte reversedBrightness = map(this->ledsBrightness[index], 0, 255, 255, 0);
-    analogWrite(22, reversedBrightness); 
-  }
+  byte reversedBrightness = map(this->ledsBrightness[index], 0, 255, 255, 0);
+  analogWrite(22, reversedBrightness); 
 }
 
 /**
